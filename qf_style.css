@@ -1,0 +1,173 @@
+body {
+	background-color: #F5F3E8;
+	font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+	color: #3f3225;
+}
+
+#all_elements {
+	margin: 0 auto;
+	width: 90%;
+	max-width: 1200px;
+	min-width: 700px;
+
+	text-align: left;
+}
+
+.en_notes {
+	font-size: 80%;
+}
+.en_notes2 {
+	font-size: 50%;
+}
+.hitorigoto {
+	font-size: 70%;
+}
+
+#header {
+}
+
+#site_title {
+	font-family: 'Neuton', serif;
+	font-size: 500%;
+	font-weight: 700;
+	letter-spacing: 2px;
+
+	color: #3f3225;
+
+	margin: 0;
+	text-align: center;
+}
+
+#site_explanation {
+	text-align: center;
+}
+
+#quoridor_gigamic_img {
+	display: block;
+	margin: 30px auto;
+}
+
+#table_of_contents {
+	text-align: left;
+}
+
+#table_of_contents h2 {
+}
+
+#table_of_contents h3 {
+	border-left: 5px solid #D76969;
+	padding-left: 5px;
+}
+
+#table_of_contents ul {
+	list-style-type: none;
+	margin-top: 4px;
+}
+
+#table_of_contents li {
+	padding: 2px;
+	margin: 1px;
+}
+
+#qf_contents {
+	text-align: left;
+}
+#qf_contents h3 {
+	border-left: 5px solid #D76969;
+	border-bottom: 1px solid #D76969;
+	padding-left: 5px;
+	width: 30%;
+	clear: both;
+}
+#qf_contents h4 {
+	margin: 5px 0px;
+}
+#qf_contents p {
+	line-height: 140%;
+	margin-top: 5px;
+}
+#qf_contents p.clear_both {
+	clear: both;
+}
+#qf_contents h4.clear_both {
+	clear: both;
+}
+#qf_contents ul {
+	padding-left: 25px;
+}
+#qf_contents li {
+	margin: 4px;
+}
+#qf_contents img {
+	float: left;
+}
+#qf_contents img.float_right {
+	float: right;
+}
+
+.p_code {
+	background-color: #ECE1DC;
+	border: 1px solid #E0D9D4;
+	text-align: center;
+}
+
+.border_on {
+	margin: 10px;
+	text-align: center;
+	border: 1px solid #3f3225;
+	border-collapse: collapse;
+}
+.border_on td {
+	padding: 4px;
+	border: 1px solid #3f3225;
+}
+.border_on th {
+	padding: 4px;
+	border: 1px solid #3f3225;
+}
+.border_on_left {
+	text-align: left;
+	margin: 15px;
+}
+
+hr {
+	clear: both;
+}
+
+#qf_ref p {
+	margin: 2px 0px;
+	font-size: 80%;
+}
+#qf_ref ul {
+	margin: 2px 0px;
+	font-size: 80%;
+}
+
+#footer {
+	text-align: center;
+	height: 100px;
+}
+#footer.index_page {
+	font-size: 90%;
+}
+
+#footer table {
+	table-layout: fixed;
+	width: 100%;
+}
+
+
+.qf_freeboard {
+	margin: 25px auto;
+}
+
+.qf_board_viewer {
+	margin: 25px;
+}
+
+.qf_board_viewer.float_left{
+	float: left;
+}
+.qf_board_viewer.margin_small{
+	margin: 10px;
+}
