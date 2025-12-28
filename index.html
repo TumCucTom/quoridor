@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quoridor - Local PvP</title>
+    <title>Quoridor - Online PvP</title>
     <link rel="stylesheet" href="qf_freeboard.css">
     <link rel="stylesheet" href="qf_style.css">
     <style>
@@ -42,6 +42,12 @@
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
 
         .btn-toggle {
@@ -102,6 +108,15 @@
             transform: translateY(-1px);
         }
 
+        .btn-online {
+            background: #5089c6;
+            color: white;
+        }
+
+        .btn-online:hover {
+            background: #4078b5;
+        }
+
         .game-area {
             display: flex;
             align-items: center;
@@ -126,6 +141,220 @@
 
         .qf_textfield {
             display: none !important;
+        }
+
+        /* Connection status */
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .connection-status.offline {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .connection-status.connecting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .connection-status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .connection-status.waiting {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .connection-status.connecting .status-dot {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .room-code-display {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.8em;
+            font-weight: bold;
+            letter-spacing: 3px;
+            color: #333;
+            user-select: all;
+        }
+
+        .room-code-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .room-code-input:focus {
+            outline: none;
+            border-color: #5089c6;
+        }
+
+        .modal-info {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            padding: 8px 20px;
+            background: #5089c6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .copy-btn:hover {
+            background: #4078b5;
+        }
+
+        .player-role {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .player-role.white {
+            background: #fff;
+            color: #333;
+            border: 2px solid #333;
+        }
+
+        .player-role.black {
+            background: #333;
+            color: #fff;
+        }
+
+        .your-turn-indicator {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 30px;
+            background: #7fa650;
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            display: none;
+        }
+
+        .your-turn-indicator.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .waiting-turn-indicator {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 30px;
+            background: #666;
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            display: none;
+        }
+
+        .waiting-turn-indicator.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* Disable board interaction when not your turn */
+        .board-disabled .qf_gameboard {
+            pointer-events: none;
+            opacity: 0.8;
         }
 
         /* Dark Mode */
@@ -162,13 +391,46 @@
         body.dark-mode .btn-toggle.active {
             background: #d76969;
         }
+
+        body.dark-mode .modal-content {
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .modal h2 {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .room-code-display {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .room-code-input {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            border-color: #555;
+        }
+
+        body.dark-mode .connection-status.offline {
+            background: #404040;
+            color: #aaa;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Quoridor</h1>
+            <div class="header-left">
+                <h1>Quoridor</h1>
+                <div id="connectionStatus" class="connection-status offline">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Local Game</span>
+                </div>
+                <span id="playerRole" class="player-role" style="display: none;"></span>
+            </div>
             <div class="game-controls">
+                <button id="onlineBtn" class="btn-secondary btn-online">Play Online</button>
                 <button id="autoFlipBtn" class="btn-secondary btn-toggle">Auto Flip Board</button>
                 <button id="darkModeBtn" class="btn-secondary">Dark Mode</button>
                 <button onclick="location.reload()" class="btn-primary">New Game</button>
@@ -182,13 +444,69 @@
         </div>
     </div>
 
+    <div id="yourTurnIndicator" class="your-turn-indicator">Your Turn!</div>
+    <div id="waitingTurnIndicator" class="waiting-turn-indicator">Waiting for opponent...</div>
+
+    <!-- Online Play Modal -->
+    <div id="onlineModal" class="modal">
+        <div class="modal-content">
+            <h2>Play Online</h2>
+            <div class="modal-buttons">
+                <button id="createRoomBtn" class="btn-primary">Create Room</button>
+                <button id="joinRoomBtn" class="btn-secondary">Join Room</button>
+            </div>
+            <p class="modal-info">Create a room to get a code, or join with a friend's code.</p>
+            <button id="closeModalBtn" class="btn-secondary" style="margin-top: 15px;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Room Created Modal -->
+    <div id="roomCreatedModal" class="modal">
+        <div class="modal-content">
+            <h2>Room Created!</h2>
+            <p>Share this code with your friend:</p>
+            <div id="roomCodeDisplay" class="room-code-display">----</div>
+            <button id="copyCodeBtn" class="copy-btn">Copy Code</button>
+            <p class="modal-info">Waiting for opponent to join...</p>
+            <button id="cancelRoomBtn" class="btn-secondary" style="margin-top: 15px;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Join Room Modal -->
+    <div id="joinRoomModal" class="modal">
+        <div class="modal-content">
+            <h2>Join Room</h2>
+            <p>Enter the room code:</p>
+            <input type="text" id="roomCodeInput" class="room-code-input" placeholder="XXXX" maxlength="8">
+            <button id="submitJoinBtn" class="btn-primary" style="margin-top: 15px; width: 100%;">Join Game</button>
+            <p id="joinError" class="modal-info" style="color: #dc3545; display: none;"></p>
+            <button id="cancelJoinBtn" class="btn-secondary" style="margin-top: 10px;">Cancel</button>
+        </div>
+    </div>
+
     <script src="jquery.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="qf_freeboard.js"></script>
     <script>
+        // ============================================
+        // Game State
+        // ============================================
         let autoFlipEnabled = false;
         let lastTurnNum = 1;
         let freeboardElement = null;
 
+        // Online play state
+        let peer = null;
+        let conn = null;
+        let myRole = null; // 'white' or 'black'
+        let isOnlineGame = false;
+        let roomCode = null;
+        let lastSentState = null;
+
+        // ============================================
+        // UI Controls
+        // ============================================
+        
         // Dark mode toggle
         document.getElementById('darkModeBtn').addEventListener('click', function() {
             document.body.classList.toggle('dark-mode');
@@ -210,7 +528,7 @@
             
             const $board = $(freeboardElement);
             const turnNum = parseInt($board.find('.qf_info_turn_num').text(), 10) || 1;
-            const isBlackTurn = (turnNum % 2 === 0); // Even turn numbers = black's turn
+            const isBlackTurn = (turnNum % 2 === 0);
             
             if (isBlackTurn) {
                 $board.find('.qf_gameboard').addClass('qf_boardInversed');
@@ -221,17 +539,353 @@
             }
         }
 
-        // Monitor turn changes
-        function watchTurnChanges() {
-            const observer = new MutationObserver(function(mutations) {
-                if (!autoFlipEnabled) return;
+        // ============================================
+        // Online Play
+        // ============================================
+
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 4; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        function updateConnectionStatus(status, text) {
+            const el = document.getElementById('connectionStatus');
+            el.className = 'connection-status ' + status;
+            el.querySelector('.status-text').textContent = text;
+        }
+
+        function showPlayerRole(role) {
+            const el = document.getElementById('playerRole');
+            el.textContent = role === 'white' ? 'You: White' : 'You: Black';
+            el.className = 'player-role ' + role;
+            el.style.display = 'inline-block';
+        }
+
+        function updateTurnIndicators() {
+            if (!isOnlineGame || !freeboardElement) return;
+
+            const turnNum = parseInt($(freeboardElement).find('.qf_info_turn_num').text(), 10) || 1;
+            const isWhiteTurn = (turnNum % 2 === 1);
+            const isMyTurn = (myRole === 'white' && isWhiteTurn) || (myRole === 'black' && !isWhiteTurn);
+
+            const yourTurn = document.getElementById('yourTurnIndicator');
+            const waitingTurn = document.getElementById('waitingTurnIndicator');
+            const wrapper = document.querySelector('.freeboard-wrapper');
+
+            if (isMyTurn) {
+                yourTurn.classList.add('show');
+                waitingTurn.classList.remove('show');
+                wrapper.classList.remove('board-disabled');
+            } else {
+                yourTurn.classList.remove('show');
+                waitingTurn.classList.add('show');
+                wrapper.classList.add('board-disabled');
+            }
+        }
+
+        function getGameState() {
+            if (!freeboardElement) return null;
+            
+            const $board = $(freeboardElement);
+            // Trigger the SNAP button to get state
+            $board.find('.qf_b_snap').trigger('click');
+            const state = $board.find('.qf_textarea').val();
+            return state;
+        }
+
+        function setGameState(state) {
+            if (!freeboardElement || !state) return;
+            
+            const $board = $(freeboardElement);
+            $board.find('.qf_textarea').val(state);
+            $board.find('.qf_b_input').trigger('click');
+        }
+
+        function sendGameState() {
+            if (!conn || !conn.open) return;
+            
+            const state = getGameState();
+            if (state && state !== lastSentState) {
+                lastSentState = state;
+                conn.send({ type: 'move', state: state });
+            }
+        }
+
+        function handleIncomingData(data) {
+            if (data.type === 'move') {
+                lastSentState = data.state;
+                setGameState(data.state);
+                updateTurnIndicators();
+            } else if (data.type === 'reset') {
+                location.reload();
+            }
+        }
+
+        function setupConnection(connection) {
+            conn = connection;
+
+            // Handle connection open event
+            function handleOpen() {
+                updateConnectionStatus('connected', 'Connected');
+                hideAllModals();
                 
+                // Wait a bit for freeboard to be ready, then flip if black
+                setTimeout(function() {
+                    if (myRole === 'black' && freeboardElement) {
+                        const $board = $(freeboardElement);
+                        $board.find('.qf_gameboard').addClass('qf_boardInversed');
+                        $board.find('.qf_char').addClass('qf_boardInversed');
+                    }
+                    updateTurnIndicators();
+                }, 100);
+            }
+
+            // Check if connection is already open
+            if (connection.open) {
+                handleOpen();
+            } else {
+                connection.on('open', handleOpen);
+            }
+
+            connection.on('data', handleIncomingData);
+
+            connection.on('close', function() {
+                updateConnectionStatus('offline', 'Disconnected');
+                document.querySelector('.freeboard-wrapper').classList.remove('board-disabled');
+                document.getElementById('yourTurnIndicator').classList.remove('show');
+                document.getElementById('waitingTurnIndicator').classList.remove('show');
+                isOnlineGame = false;
+            });
+
+            connection.on('error', function(err) {
+                console.error('Connection error:', err);
+                updateConnectionStatus('offline', 'Error');
+            });
+        }
+
+        function createRoom() {
+            roomCode = generateRoomCode();
+            myRole = 'white';
+            isOnlineGame = true;
+
+            updateConnectionStatus('waiting', 'Creating room...');
+
+            peer = new Peer('quoridor-' + roomCode, {
+                debug: 0
+            });
+
+            peer.on('open', function(id) {
+                document.getElementById('roomCodeDisplay').textContent = roomCode;
+                document.getElementById('roomCreatedModal').classList.add('show');
+                updateConnectionStatus('waiting', 'Waiting for opponent');
+                showPlayerRole('white');
+            });
+
+            peer.on('connection', function(connection) {
+                setupConnection(connection);
+            });
+
+            peer.on('error', function(err) {
+                console.error('Peer error:', err);
+                if (err.type === 'unavailable-id') {
+                    // Room code already taken, try another
+                    peer.destroy();
+                    createRoom();
+                } else {
+                    updateConnectionStatus('offline', 'Error: ' + err.type);
+                    hideAllModals();
+                }
+            });
+        }
+
+        function joinRoom(code) {
+            roomCode = code.toUpperCase();
+            myRole = 'black';
+            isOnlineGame = true;
+
+            updateConnectionStatus('connecting', 'Connecting...');
+            document.getElementById('joinError').style.display = 'none';
+
+            peer = new Peer({
+                debug: 0
+            });
+
+            peer.on('open', function(peerId) {
+                console.log('Peer opened with ID:', peerId);
+                const connection = peer.connect('quoridor-' + roomCode, {
+                    reliable: true
+                });
+
+                let connectionEstablished = false;
+                let connectionTimeout;
+
+                connection.on('open', function() {
+                    console.log('Connection opened successfully');
+                    connectionEstablished = true;
+                    clearTimeout(connectionTimeout);
+                    setupConnection(connection);
+                    showPlayerRole('black');
+                });
+
+                connection.on('error', function(err) {
+                    console.error('Connection error:', err);
+                    clearTimeout(connectionTimeout);
+                    if (!connectionEstablished) {
+                        showJoinError('Failed to connect: ' + (err.type || err.message || 'Unknown error'));
+                        hideAllModals();
+                        updateConnectionStatus('offline', 'Local Game');
+                        if (peer) {
+                            peer.destroy();
+                            peer = null;
+                        }
+                    }
+                });
+
+                // Timeout for connection
+                connectionTimeout = setTimeout(function() {
+                    if (!connectionEstablished) {
+                        console.log('Connection timeout');
+                        showJoinError('Room not found or connection failed. Please check the room code.');
+                        updateConnectionStatus('offline', 'Local Game');
+                        if (peer) {
+                            peer.destroy();
+                            peer = null;
+                        }
+                        hideAllModals();
+                    }
+                }, 10000);
+            });
+
+            peer.on('error', function(err) {
+                console.error('Peer error:', err);
+                showJoinError('Connection error: ' + err.type);
+                updateConnectionStatus('offline', 'Local Game');
+                hideAllModals();
+            });
+        }
+
+        function showJoinError(message) {
+            const el = document.getElementById('joinError');
+            el.textContent = message;
+            el.style.display = 'block';
+        }
+
+        function hideAllModals() {
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+        }
+
+        function cancelOnlineGame() {
+            if (peer) {
+                peer.destroy();
+                peer = null;
+            }
+            if (conn) {
+                conn.close();
+                conn = null;
+            }
+            isOnlineGame = false;
+            myRole = null;
+            roomCode = null;
+            updateConnectionStatus('offline', 'Local Game');
+            document.getElementById('playerRole').style.display = 'none';
+            document.querySelector('.freeboard-wrapper').classList.remove('board-disabled');
+            document.getElementById('yourTurnIndicator').classList.remove('show');
+            document.getElementById('waitingTurnIndicator').classList.remove('show');
+            hideAllModals();
+        }
+
+        // ============================================
+        // Event Listeners
+        // ============================================
+
+        document.getElementById('onlineBtn').addEventListener('click', function() {
+            document.getElementById('onlineModal').classList.add('show');
+        });
+
+        document.getElementById('createRoomBtn').addEventListener('click', function() {
+            hideAllModals();
+            createRoom();
+        });
+
+        document.getElementById('joinRoomBtn').addEventListener('click', function() {
+            hideAllModals();
+            document.getElementById('joinRoomModal').classList.add('show');
+            document.getElementById('roomCodeInput').value = '';
+            document.getElementById('roomCodeInput').focus();
+        });
+
+        document.getElementById('submitJoinBtn').addEventListener('click', function() {
+            const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            if (code.length >= 4) {
+                // Keep modal open to show connection status
+                joinRoom(code);
+            } else {
+                showJoinError('Please enter a valid room code (4 characters)');
+            }
+        });
+
+        document.getElementById('roomCodeInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('submitJoinBtn').click();
+            }
+        });
+
+        document.getElementById('copyCodeBtn').addEventListener('click', function() {
+            navigator.clipboard.writeText(roomCode).then(function() {
+                document.getElementById('copyCodeBtn').textContent = 'Copied!';
+                setTimeout(function() {
+                    document.getElementById('copyCodeBtn').textContent = 'Copy Code';
+                }, 2000);
+            });
+        });
+
+        document.getElementById('closeModalBtn').addEventListener('click', hideAllModals);
+        document.getElementById('cancelRoomBtn').addEventListener('click', cancelOnlineGame);
+        document.getElementById('cancelJoinBtn').addEventListener('click', function() {
+            hideAllModals();
+            cancelOnlineGame();
+        });
+
+        // Close modals on background click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    if (this.id === 'roomCreatedModal') {
+                        cancelOnlineGame();
+                    } else {
+                        hideAllModals();
+                    }
+                }
+            });
+        });
+
+        // ============================================
+        // Game State Monitoring
+        // ============================================
+
+        function watchGameChanges() {
+            const observer = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {
                     if (mutation.type === 'childList' || mutation.type === 'characterData') {
                         const newTurnNum = parseInt($(freeboardElement).find('.qf_info_turn_num').text(), 10) || 1;
+                        
                         if (newTurnNum !== lastTurnNum) {
                             lastTurnNum = newTurnNum;
-                            updateBoardFlip();
+                            
+                            // Auto flip if enabled
+                            if (autoFlipEnabled && !isOnlineGame) {
+                                updateBoardFlip();
+                            }
+                            
+                            // Send move to opponent if online
+                            if (isOnlineGame && conn && conn.open) {
+                                sendGameState();
+                                updateTurnIndicators();
+                            }
                         }
                     }
                 });
@@ -250,12 +904,22 @@
                         });
                         lastTurnNum = parseInt(turnNumElement.textContent, 10) || 1;
                     }
+
+                    // Also observe wall counts for wall placements
+                    const wallCounts = $(freeboardElement).find('.qf_info_wall_num');
+                    wallCounts.each(function() {
+                        observer.observe(this, {
+                            childList: true,
+                            characterData: true,
+                            subtree: true
+                        });
+                    });
                 }
             }, 500);
         }
 
         // Start watching when page loads
-        watchTurnChanges();
+        watchGameChanges();
     </script>
 </body>
 </html>
