@@ -21,6 +21,14 @@
             padding: 0;
         }
 
+        @media (max-width: 768px) {
+            html, body {
+                overflow: auto;
+                height: auto;
+                min-height: 100%;
+            }
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #faf8f3;
@@ -33,6 +41,15 @@
             flex-direction: column;
             position: fixed;
             overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                position: relative;
+                overflow-y: auto;
+                height: auto;
+                min-height: 100vh;
+            }
         }
 
         .container {
@@ -49,6 +66,9 @@
         @media (max-width: 768px) {
             .container {
                 padding: 10px 15px;
+                height: auto;
+                min-height: 100%;
+                overflow: visible;
             }
             
             .game-area {
@@ -370,10 +390,14 @@
         @media (max-width: 768px) {
             .game-area {
                 gap: 0;
-                margin-bottom: 10px;
+                margin-bottom: 20px;
                 padding: 0;
                 margin-left: auto;
                 margin-right: auto;
+                flex: 0 0 auto;
+                min-height: auto;
+                overflow: visible;
+                align-items: flex-start;
             }
         }
 
@@ -399,6 +423,10 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                flex: 0 0 auto;
+                height: auto;
+                max-height: none;
+                overflow: visible;
             }
         }
 
@@ -1431,27 +1459,39 @@
             // The freeboard's natural size is 52 * boardsize (from the code: width/height = 52*bs)
             const naturalSize = 52 * boardSize;
             
-            // Get available space in the wrapper
-            const wrapperRect = wrapperEl.getBoundingClientRect();
             const isMobile = window.innerWidth <= 768;
-            const padding = isMobile ? 10 : 20; // account for padding
-            const availableWidth = wrapperRect.width - padding;
-            const availableHeight = wrapperRect.height - padding;
             
-            // Calculate scale to fit both dimensions (only scale down, never up)
-            const scaleX = availableWidth / naturalSize;
-            const scaleY = availableHeight / naturalSize;
-            const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
-            
-            // Apply the scale transform
-            freeboardEl.style.transform = `scale(${scale})`;
-            freeboardEl.style.transformOrigin = 'center center';
-            freeboardEl.style.width = naturalSize + 'px';
-            freeboardEl.style.height = naturalSize + 'px';
-            
-            // Ensure centering
-            freeboardEl.style.marginLeft = 'auto';
-            freeboardEl.style.marginRight = 'auto';
+            if (isMobile) {
+                // On mobile: scale to fit width, allow vertical scrolling
+                const containerPadding = 30; // 15px on each side
+                const wrapperPadding = 10; // 5px on each side
+                const availableWidth = window.innerWidth - containerPadding - wrapperPadding;
+                const scale = Math.min(availableWidth / naturalSize, 1); // Don't scale up beyond 100%
+                
+                freeboardEl.style.transform = `scale(${scale})`;
+                freeboardEl.style.transformOrigin = 'center center';
+                freeboardEl.style.width = naturalSize + 'px';
+                freeboardEl.style.height = naturalSize + 'px';
+                freeboardEl.style.marginLeft = 'auto';
+                freeboardEl.style.marginRight = 'auto';
+            } else {
+                // On desktop: scale to fit both dimensions
+                const wrapperRect = wrapperEl.getBoundingClientRect();
+                const padding = 20;
+                const availableWidth = wrapperRect.width - padding;
+                const availableHeight = wrapperRect.height - padding;
+                
+                const scaleX = availableWidth / naturalSize;
+                const scaleY = availableHeight / naturalSize;
+                const scale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
+                
+                freeboardEl.style.transform = `scale(${scale})`;
+                freeboardEl.style.transformOrigin = 'center center';
+                freeboardEl.style.width = naturalSize + 'px';
+                freeboardEl.style.height = naturalSize + 'px';
+                freeboardEl.style.marginLeft = 'auto';
+                freeboardEl.style.marginRight = 'auto';
+            }
         }
 
         function handleResize() {
