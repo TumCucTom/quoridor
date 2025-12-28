@@ -70,6 +70,9 @@
                 gap: 15px;
                 margin-bottom: 15px;
                 padding-bottom: 15px;
+                position: relative;
+                padding-left: 15px;
+                padding-right: 15px;
             }
         }
 
@@ -82,9 +85,12 @@
 
         @media (max-width: 768px) {
             .header-left {
-                flex: 1;
+                flex: 0 0 auto;
+                display: flex;
+                align-items: center;
                 gap: 10px;
                 min-width: 0;
+                max-width: calc(50% - 40px);
             }
         }
 
@@ -138,7 +144,12 @@
 
         @media (max-width: 768px) {
             .mobile-menu {
-                display: block;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                justify-content: center;
+                align-items: center;
             }
         }
 
