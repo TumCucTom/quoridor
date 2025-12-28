@@ -50,6 +50,11 @@
             .container {
                 padding: 10px 15px;
             }
+            
+            .game-area {
+                padding-left: 0;
+                padding-right: 0;
+            }
         }
 
         header {
@@ -70,9 +75,6 @@
                 gap: 15px;
                 margin-bottom: 15px;
                 padding-bottom: 15px;
-                position: relative;
-                padding-left: 15px;
-                padding-right: 15px;
             }
         }
 
@@ -85,12 +87,9 @@
 
         @media (max-width: 768px) {
             .header-left {
-                flex: 0 0 auto;
-                display: flex;
-                align-items: center;
+                flex: 1;
                 gap: 10px;
                 min-width: 0;
-                max-width: calc(50% - 40px);
             }
         }
 
@@ -144,12 +143,7 @@
 
         @media (max-width: 768px) {
             .mobile-menu {
-                position: absolute;
-                left: 50%;
-                transform: translateX(-50%);
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                display: block;
             }
         }
 
@@ -377,6 +371,9 @@
             .game-area {
                 gap: 0;
                 margin-bottom: 10px;
+                padding: 0;
+                margin-left: auto;
+                margin-right: auto;
             }
         }
 
@@ -397,6 +394,11 @@
         @media (max-width: 768px) {
             .freeboard-wrapper {
                 padding: 5px;
+                width: 100%;
+                margin: 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
         }
 
@@ -411,6 +413,13 @@
             left: auto !important;
             right: auto !important;
             top: auto !important;
+        }
+
+        @media (max-width: 768px) {
+            .qf_freeboard {
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
         }
 
         /* Hide control buttons and input field */
@@ -1424,8 +1433,10 @@
             
             // Get available space in the wrapper
             const wrapperRect = wrapperEl.getBoundingClientRect();
-            const availableWidth = wrapperRect.width - 20; // account for padding
-            const availableHeight = wrapperRect.height - 20;
+            const isMobile = window.innerWidth <= 768;
+            const padding = isMobile ? 10 : 20; // account for padding
+            const availableWidth = wrapperRect.width - padding;
+            const availableHeight = wrapperRect.height - padding;
             
             // Calculate scale to fit both dimensions (only scale down, never up)
             const scaleX = availableWidth / naturalSize;
@@ -1437,6 +1448,10 @@
             freeboardEl.style.transformOrigin = 'center center';
             freeboardEl.style.width = naturalSize + 'px';
             freeboardEl.style.height = naturalSize + 'px';
+            
+            // Ensure centering
+            freeboardEl.style.marginLeft = 'auto';
+            freeboardEl.style.marginRight = 'auto';
         }
 
         function handleResize() {
