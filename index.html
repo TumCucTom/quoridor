@@ -64,8 +64,9 @@
 
         @media (max-width: 768px) {
             header {
-                flex-direction: column;
-                align-items: flex-start;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
                 gap: 15px;
                 margin-bottom: 15px;
                 padding-bottom: 15px;
@@ -81,8 +82,9 @@
 
         @media (max-width: 768px) {
             .header-left {
-                width: 100%;
+                flex: 1;
                 gap: 10px;
+                min-width: 0;
             }
         }
 
@@ -109,6 +111,10 @@
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.5em;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                flex-shrink: 0;
             }
         }
 
@@ -120,9 +126,156 @@
 
         @media (max-width: 768px) {
             .game-controls {
-                width: 100%;
-                gap: 8px;
+                display: none;
             }
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu {
+                display: block;
+            }
+        }
+
+        .btn-mobile-menu {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.5em;
+            font-weight: 500;
+            cursor: pointer;
+            background: #5089c6;
+            color: white;
+            min-height: 44px;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-mobile-menu:hover {
+            background: #4078b5;
+        }
+
+        .btn-mobile-menu:active {
+            background: #3569a0;
+        }
+
+        .mobile-menu-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 200px;
+            z-index: 1000;
+            overflow: hidden;
+            animation: slideDown 0.2s ease;
+        }
+
+        .mobile-menu-dropdown.show {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mobile-menu-dropdown button {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 0;
+            font-size: 0.95em;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: left;
+            background: white;
+            color: #333;
+            transition: background 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 44px;
+        }
+
+        .mobile-menu-dropdown button:first-child {
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .mobile-menu-dropdown button:last-child {
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .mobile-menu-dropdown button:hover {
+            background: #f5f5f5;
+        }
+
+        .mobile-menu-dropdown button:active {
+            background: #e5e5e5;
+        }
+
+        .mobile-menu-dropdown .btn-primary {
+            background: #7fa650;
+            color: white;
+        }
+
+        .mobile-menu-dropdown .btn-primary:hover {
+            background: #6d8f42;
+        }
+
+        .mobile-menu-dropdown .btn-online {
+            background: #5089c6;
+            color: white;
+        }
+
+        .mobile-menu-dropdown .btn-online:hover {
+            background: #4078b5;
+        }
+
+        .mobile-menu-dropdown .btn-toggle.active {
+            background: #d76969;
+            color: white;
+        }
+
+        .mobile-menu-dropdown .btn-toggle.active:hover {
+            background: #c55a5a;
+        }
+
+        body.dark-mode .mobile-menu-dropdown {
+            background: #2d2d2d;
+        }
+
+        body.dark-mode .mobile-menu-dropdown button {
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .mobile-menu-dropdown button:hover {
+            background: #404040;
+        }
+
+        body.dark-mode .mobile-menu-dropdown button:active {
+            background: #505050;
         }
 
         .btn-primary, .btn-secondary {
@@ -734,7 +887,18 @@
                 <button id="onlineBtn" class="btn-secondary btn-online">Play Online</button>
                 <button id="autoFlipBtn" class="btn-secondary btn-toggle">Auto Flip Board</button>
                 <button id="darkModeBtn" class="btn-secondary">Dark Mode</button>
-                <button onclick="location.reload()" class="btn-primary">New Game</button>
+                <button id="newGameBtn" class="btn-primary">New Game</button>
+            </div>
+            <div class="mobile-menu">
+                <button id="mobileMenuBtn" class="btn-mobile-menu">
+                    <span>☰</span>
+                </button>
+                <div id="mobileMenuDropdown" class="mobile-menu-dropdown">
+                    <button id="mobileOnlineBtn" class="btn-secondary btn-online">Play Online</button>
+                    <button id="mobileAutoFlipBtn" class="btn-secondary btn-toggle">Auto Flip Board</button>
+                    <button id="mobileDarkModeBtn" class="btn-secondary">Dark Mode</button>
+                    <button id="mobileNewGameBtn" class="btn-primary" onclick="location.reload()">New Game</button>
+                </div>
             </div>
         </header>
 
@@ -820,21 +984,61 @@
         // UI Controls
         // ============================================
         
-        // Dark mode toggle
-        document.getElementById('darkModeBtn').addEventListener('click', function() {
-            document.body.classList.toggle('dark-mode');
-            this.textContent = document.body.classList.contains('dark-mode') ? 'Light Mode' : 'Dark Mode';
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenuDropdown = document.getElementById('mobileMenuDropdown');
+        
+        function toggleMobileMenu() {
+            mobileMenuDropdown.classList.toggle('show');
+        }
+        
+        function closeMobileMenu() {
+            mobileMenuDropdown.classList.remove('show');
+        }
+        
+        mobileMenuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleMobileMenu();
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!mobileMenuBtn.contains(e.target) && !mobileMenuDropdown.contains(e.target)) {
+                closeMobileMenu();
+            }
+        });
+        
+        // Close dropdown when clicking on a menu item
+        mobileMenuDropdown.addEventListener('click', function(e) {
+            if (e.target.tagName === 'BUTTON') {
+                closeMobileMenu();
+            }
         });
 
+        // Dark mode toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('darkModeBtn').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            document.getElementById('mobileDarkModeBtn').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+        }
+        
+        document.getElementById('darkModeBtn').addEventListener('click', toggleDarkMode);
+        document.getElementById('mobileDarkModeBtn').addEventListener('click', toggleDarkMode);
+
         // Auto flip toggle
-        document.getElementById('autoFlipBtn').addEventListener('click', function() {
+        function toggleAutoFlip() {
             autoFlipEnabled = !autoFlipEnabled;
-            this.classList.toggle('active', autoFlipEnabled);
+            document.getElementById('autoFlipBtn').classList.toggle('active', autoFlipEnabled);
+            document.getElementById('mobileAutoFlipBtn').classList.toggle('active', autoFlipEnabled);
             
             if (autoFlipEnabled && freeboardElement) {
                 updateBoardFlip();
             }
-        });
+        }
+        
+        document.getElementById('autoFlipBtn').addEventListener('click', toggleAutoFlip);
+        document.getElementById('mobileAutoFlipBtn').addEventListener('click', toggleAutoFlip);
 
         function updateBoardFlip() {
             if (!autoFlipEnabled || !freeboardElement) return;
@@ -1124,8 +1328,15 @@
         // Event Listeners
         // ============================================
 
-        document.getElementById('onlineBtn').addEventListener('click', function() {
+        function openOnlineModal() {
             document.getElementById('onlineModal').classList.add('show');
+        }
+        
+        document.getElementById('onlineBtn').addEventListener('click', openOnlineModal);
+        document.getElementById('mobileOnlineBtn').addEventListener('click', openOnlineModal);
+        
+        document.getElementById('newGameBtn').addEventListener('click', function() {
+            location.reload();
         });
 
         document.getElementById('createRoomBtn').addEventListener('click', function() {
