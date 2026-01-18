@@ -1003,6 +1003,15 @@
         </div>
     </div>
 
+    <!-- Game Win Modal -->
+    <div id="gameWinModal" class="modal">
+        <div class="modal-content">
+            <h2 id="winTitle">Game Over!</h2>
+            <p id="winMessage" style="font-size: 1.2em; margin: 20px 0;"></p>
+            <button id="newGameAfterWinBtn" class="btn-primary" style="margin-top: 15px; width: 100%;">New Game</button>
+        </div>
+    </div>
+
     <script src="jquery.min.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="qf_freeboard.js"></script>
@@ -1352,6 +1361,16 @@
             document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
         }
 
+        function showWinModal(title, message) {
+            document.getElementById('winTitle').textContent = title;
+            document.getElementById('winMessage').textContent = message;
+            document.getElementById('gameWinModal').classList.add('show');
+        }
+
+        function hideWinModal() {
+            document.getElementById('gameWinModal').classList.remove('show');
+        }
+
         function cancelOnlineGame() {
             if (peer) {
                 peer.destroy();
@@ -1384,6 +1403,10 @@
         document.getElementById('mobileOnlineBtn').addEventListener('click', openOnlineModal);
         
         document.getElementById('newGameBtn').addEventListener('click', function() {
+            location.reload();
+        });
+
+        document.getElementById('newGameAfterWinBtn').addEventListener('click', function() {
             location.reload();
         });
 
@@ -1530,6 +1553,32 @@
             setTimeout(function() {
                 freeboardElement = document.querySelector('.qf_freeboard');
                 if (freeboardElement) {
+                    // Listen for win events
+                    $(freeboardElement).on('quoridorWin', function(e, winner) {
+                        const wrapper = document.querySelector('.freeboard-wrapper');
+                        if (winner === 'white') {
+                            showWinModal('White Wins!', 'White has reached the opposite side of the board!');
+                            // Disable board interactions
+                            if (wrapper) wrapper.classList.add('board-disabled');
+                        } else if (winner === 'black') {
+                            showWinModal('Black Wins!', 'Black has reached the opposite side of the board!');
+                            // Disable board interactions
+                            if (wrapper) wrapper.classList.add('board-disabled');
+                        } else {
+                            // Winner cleared (undo move or reset)
+                            hideWinModal();
+                            // Re-enable board if not in online mode, or re-enable based on turn in online mode
+                            if (wrapper) {
+                                if (!isOnlineGame) {
+                                    wrapper.classList.remove('board-disabled');
+                                } else {
+                                    // In online mode, check if it's actually the player's turn
+                                    updateTurnIndicators();
+                                }
+                            }
+                        }
+                    });
+
                     const turnNumElement = $(freeboardElement).find('.qf_info_turn_num')[0];
                     if (turnNumElement) {
                         observer.observe(turnNumElement, {

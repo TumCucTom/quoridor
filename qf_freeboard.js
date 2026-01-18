@@ -172,6 +172,8 @@ jQuery(function(){
 
 			//data reset and restart
 			resetqfObj(qfObj);
+			// Clear win modal if game was won
+			$(el).trigger('quoridorWin', [null]);
 			adjustGBEvents(el, bs, qfObj);
 		});
 
@@ -369,6 +371,14 @@ jQuery(function(){
 		var tMargin = parseInt(bs/3, 10);
 		var turnP, turnWH, turnWV, pWallX, pWallY, wFlag;
 
+		// Disable all moves if game has ended
+		if(qfObj.gameWinner !== null){
+			g.off();
+			hs.off();
+			vs.off();
+			return;
+		}
+
 		if((qfObj.state.lastmove.wb === null) || (qfObj.state.lastmove.wb === 1)){
 			//white turn
 			turnP = t.find('.qf_piece_white2');
@@ -425,13 +435,52 @@ jQuery(function(){
 			return;
 		}
 
-		hs.on({
+		// Track which wall spaces are disabled due to existing walls
+		var disabledHSpaces = [];
+		var disabledVSpaces = [];
+		for(i=0; i<64; i++){
+			pWallX = i%8;
+			pWallY = parseInt(i/8, 10);
+			if(qfObj.state.hSpaces[i] === true){
+				disabledHSpaces[i] = true;
+				disabledVSpaces[i] = true;
+				if(pWallX === 0){
+					disabledHSpaces[i+1] = true;
+				} else if(pWallX === 7){
+					disabledHSpaces[i-1] = true;
+				} else {
+					disabledHSpaces[i+1] = true;
+					disabledHSpaces[i-1] = true;
+				}
+			}
+			if(qfObj.state.vSpaces[i] === true){
+				disabledVSpaces[i] = true;
+				disabledHSpaces[i] = true;
+				if(pWallY === 0){
+					disabledVSpaces[i+8] = true;
+				} else if(pWallY === 7){
+					disabledVSpaces[i-8] = true;
+				} else {
+					disabledVSpaces[i+8] = true;
+					disabledVSpaces[i-8] = true;
+				}
+			}
+		}
+
+		// Add event handlers only for valid wall placements
+		// Check each horizontal wall space
+		for(i=0; i<64; i++){
+			if(!disabledHSpaces[i]){
+				// Check if this wall placement would block either player
+				if(isValidWallPlacement(qfObj, i, 0)){
+					// Valid placement - add event handlers
+					hs.eq(i).on({
 			mouseenter: function(){
-				var idx = hs.index(this);
+							var wallIdx = hs.index(this);
 				turnWH.css({
 					display: 'block',
-					top: (5*bs*(7-parseInt(idx/8, 10))+4*bs)+'px',
-					left: (5*bs*(idx%8))+'px'
+								top: (5*bs*(7-parseInt(wallIdx/8, 10))+4*bs)+'px',
+								left: (5*bs*(wallIdx%8))+'px'
 				});
 			},
 			mouseleave: function(){
@@ -446,14 +495,23 @@ jQuery(function(){
 				toNextTurn(el, bs, qfObj, aMove);
 			}
 		});
+				}
+			}
+		}
 
-		vs.on({
+		// Check each vertical wall space
+		for(i=0; i<64; i++){
+			if(!disabledVSpaces[i]){
+				// Check if this wall placement would block either player
+				if(isValidWallPlacement(qfObj, i, 1)){
+					// Valid placement - add event handlers
+					vs.eq(i).on({
 			mouseenter: function(){
-				var idx = vs.index(this);
+							var wallIdx = vs.index(this);
 				turnWV.css({
 					display: 'block',
-					top: (5*bs*(7-parseInt(idx/8, 10)))+'px',
-					left: (5*bs*(idx%8)+4*bs)+'px'
+								top: (5*bs*(7-parseInt(wallIdx/8, 10)))+'px',
+								left: (5*bs*(wallIdx%8)+4*bs)+'px'
 				});
 			},
 			mouseleave: function(){
@@ -468,35 +526,184 @@ jQuery(function(){
 				toNextTurn(el, bs, qfObj, aMove);
 			}
 		});
-
-		for(i=0; i<64; i++){
-			pWallX = i%8;
-			pWallY = parseInt(i/8, 10);
-			if(qfObj.state.hSpaces[i] === true){
-				if(pWallX === 0){
-					hs.eq(i+1).off();
-				} else if(pWallX === 7){
-					hs.eq(i-1).off();
-				} else {
-					hs.eq(i+1).off();
-					hs.eq(i-1).off();
 				}
-				hs.eq(i).off();
-				vs.eq(i).off();
-			}
-			if(qfObj.state.vSpaces[i] === true){
-				if(pWallY === 0){
-					vs.eq(i+8).off();
-				} else if(pWallY === 7){
-					vs.eq(i-8).off();
-				} else {
-					vs.eq(i+8).off();
-					vs.eq(i-8).off();
-				}
-				vs.eq(i).off();
-				hs.eq(i).off();
 			}
 		}
+	}
+
+	// Helper to check if wall index is valid and wall is NOT placed
+	function isWallClear(wallIdx, wallArray) {
+		// If index is out of bounds, no wall can exist there - movement is allowed
+		if(wallIdx < 0 || wallIdx >= 64) return true;
+		// Otherwise check if wall is placed
+		return wallArray[wallIdx] !== true;
+	}
+
+	// Check if movement UP is possible (row increases towards row 8)
+	// Matches the logic in calMovableNums for "up" direction
+	function canMoveUp(qfObj, pos, tempHSpaces, tempVSpaces) {
+		var row = parseInt(pos / 9, 10);
+		var col = pos % 9;
+		if(row === 8) return false; // Already at top
+		
+		// Moving up means going from row to row+1
+		// Need to check horizontal walls at row (between row and row+1)
+		if(col === 8) {
+			// Right edge - only one wall to check
+			return isWallClear(8 * row + col - 1, tempHSpaces);
+		} else if(col === 0) {
+			// Left edge - only one wall to check
+			return isWallClear(8 * row + col, tempHSpaces);
+				} else {
+			// Middle - check both walls
+			return isWallClear(8 * row + col - 1, tempHSpaces) && 
+			       isWallClear(8 * row + col, tempHSpaces);
+		}
+	}
+	
+	// Check if movement DOWN is possible (row decreases towards row 0)
+	function canMoveDown(qfObj, pos, tempHSpaces, tempVSpaces) {
+		var row = parseInt(pos / 9, 10);
+		var col = pos % 9;
+		if(row === 0) return false; // Already at bottom
+		
+		// Moving down means going from row to row-1
+		// Need to check horizontal walls at row-1 (between row-1 and row)
+		if(col === 8) {
+			// Right edge
+			return isWallClear(8 * (row - 1) + col - 1, tempHSpaces);
+		} else if(col === 0) {
+			// Left edge
+			return isWallClear(8 * (row - 1) + col, tempHSpaces);
+				} else {
+			// Middle
+			return isWallClear(8 * (row - 1) + col - 1, tempHSpaces) && 
+			       isWallClear(8 * (row - 1) + col, tempHSpaces);
+		}
+	}
+	
+	// Check if movement RIGHT is possible (col increases)
+	function canMoveRight(qfObj, pos, tempHSpaces, tempVSpaces) {
+		var row = parseInt(pos / 9, 10);
+		var col = pos % 9;
+		if(col === 8) return false; // Already at right edge
+		
+		// Moving right means going from col to col+1
+		// Need to check vertical walls at col (between col and col+1)
+		if(row === 8) {
+			// Top row - only one wall to check
+			return isWallClear(8 * (row - 1) + col, tempVSpaces);
+		} else if(row === 0) {
+			// Bottom row - only one wall to check
+			return isWallClear(8 * row + col, tempVSpaces);
+		} else {
+			// Middle - check both walls
+			return isWallClear(8 * row + col, tempVSpaces) && 
+			       isWallClear(8 * (row - 1) + col, tempVSpaces);
+		}
+	}
+	
+	// Check if movement LEFT is possible (col decreases)
+	function canMoveLeft(qfObj, pos, tempHSpaces, tempVSpaces) {
+		var row = parseInt(pos / 9, 10);
+		var col = pos % 9;
+		if(col === 0) return false; // Already at left edge
+		
+		// Moving left means going from col to col-1
+		// Need to check vertical walls at col-1 (between col-1 and col)
+		if(row === 8) {
+			// Top row
+			return isWallClear(8 * (row - 1) + col - 1, tempVSpaces);
+		} else if(row === 0) {
+			// Bottom row
+			return isWallClear(8 * row + col - 1, tempVSpaces);
+		} else {
+			// Middle
+			return isWallClear(8 * row + col - 1, tempVSpaces) && 
+			       isWallClear(8 * (row - 1) + col - 1, tempVSpaces);
+		}
+	}
+	
+	// BFS pathfinding to check if a path exists from startPos to goalRow
+	function hasPathToGoal(qfObj, startPos, goalRow, tempWallPlace, tempWallHv) {
+		// Create temporary wall state with the proposed wall
+		var tempHSpaces = qfObj.state.hSpaces.slice();
+		var tempVSpaces = qfObj.state.vSpaces.slice();
+		
+		if(tempWallPlace !== null && tempWallHv !== null) {
+			if(tempWallHv === 0) {
+				// Horizontal wall
+				tempHSpaces[tempWallPlace] = true;
+			} else {
+				// Vertical wall
+				tempVSpaces[tempWallPlace] = true;
+			}
+		}
+		
+		// BFS to find path to goal row
+		var visited = [];
+		var queue = [startPos];
+		visited[startPos] = true;
+		
+		while(queue.length > 0) {
+			var current = queue.shift();
+			var row = parseInt(current / 9, 10);
+			var col = current % 9;
+			
+			// Check if we reached the goal row
+			if(row === goalRow) {
+				return true;
+			}
+			
+			// Check all 4 directions
+			// Up = increase row (towards row 8, black's start, white's goal)
+			if(canMoveUp(qfObj, current, tempHSpaces, tempVSpaces)) {
+				var upPos = (row + 1) * 9 + col;
+				if(!visited[upPos] && upPos >= 0 && upPos < 81) {
+					visited[upPos] = true;
+					queue.push(upPos);
+				}
+			}
+			
+			// Down = decrease row (towards row 0, white's start, black's goal)
+			if(canMoveDown(qfObj, current, tempHSpaces, tempVSpaces)) {
+				var downPos = (row - 1) * 9 + col;
+				if(!visited[downPos] && downPos >= 0 && downPos < 81) {
+					visited[downPos] = true;
+					queue.push(downPos);
+				}
+			}
+			
+			// Left = decrease col
+			if(canMoveLeft(qfObj, current, tempHSpaces, tempVSpaces)) {
+				var leftPos = row * 9 + (col - 1);
+				if(!visited[leftPos] && leftPos >= 0 && leftPos < 81) {
+					visited[leftPos] = true;
+					queue.push(leftPos);
+				}
+			}
+			
+			// Right = increase col
+			if(canMoveRight(qfObj, current, tempHSpaces, tempVSpaces)) {
+				var rightPos = row * 9 + (col + 1);
+				if(!visited[rightPos] && rightPos >= 0 && rightPos < 81) {
+					visited[rightPos] = true;
+					queue.push(rightPos);
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	// Validate wall placement - checks if both players can still reach their goals
+	function isValidWallPlacement(qfObj, wallPlace, wallHv) {
+		// White starts at row 0 (bottom), needs to reach row 8 (top)
+		// Black starts at row 8 (top), needs to reach row 0 (bottom)
+		var whiteCanReach = hasPathToGoal(qfObj, qfObj.state.wPiece, 8, wallPlace, wallHv);
+		var blackCanReach = hasPathToGoal(qfObj, qfObj.state.bPiece, 0, wallPlace, wallHv);
+		
+		return whiteCanReach && blackCanReach;
 	}
 
 	function toNextTurn(el, bs, qfObj, aMove){
@@ -520,6 +727,14 @@ jQuery(function(){
 			highlightOff(targetLM, bs);
 		}
 
+		// Validate wall placement before proceeding
+		if(aMove.pw === 1) {
+			if(!isValidWallPlacement(qfObj, aMove.place, aMove.hv)) {
+				// Wall would block a player's path, reject the move
+				return;
+			}
+		}
+
 		qfObj.record.currentNum += 1;
 		qfObj.record.moveNum = qfObj.record.currentNum;
 		qfObj.record.moves[qfObj.record.currentNum-1] = {};
@@ -533,10 +748,26 @@ jQuery(function(){
 				pieceWB = t.find('.qf_piece_white');
 				qfObj.record.moves[qfObj.record.currentNum-1].backPlace = qfObj.state.wPiece;
 				qfObj.state.wPiece = aMove.place;
+				
+				// Check for white win: white needs to reach row 8 (top of board visually)
+				var whiteRow = parseInt(qfObj.state.wPiece / 9, 10);
+				if(whiteRow === 8){
+					qfObj.gameWinner = 'white';
+					// Trigger custom event for win detection
+					$(el).trigger('quoridorWin', ['white']);
+				}
 			} else {
 				pieceWB = t.find('.qf_piece_black');
 				qfObj.record.moves[qfObj.record.currentNum-1].backPlace = qfObj.state.bPiece;
 				qfObj.state.bPiece = aMove.place;
+				
+				// Check for black win: black needs to reach row 0 (bottom of board visually)
+				var blackRow = parseInt(qfObj.state.bPiece / 9, 10);
+				if(blackRow === 0){
+					qfObj.gameWinner = 'black';
+					// Trigger custom event for win detection
+					$(el).trigger('quoridorWin', ['black']);
+				}
 			}
 			pieceWB.css({
 				top: 5*bs*(8-parseInt(aMove.place/9, 10)) + tMargin +'px',
@@ -657,6 +888,10 @@ jQuery(function(){
 				'transform': 'scale(3)'
 			});
 		}
+
+		// Clear winner when undoing moves
+		qfObj.gameWinner = null;
+		$(el).trigger('quoridorWin', [null]);
 
 		if(qfObj.record.currentNum === 1){
 			//cannot back anymore
@@ -1386,6 +1621,7 @@ jQuery(function(){
 		qfObj.gray = false;
 		qfObj.highlight = false;
 		qfObj.recMode = false;
+		qfObj.gameWinner = null;
 
 		resetqfObj(qfObj);
 	}
@@ -1396,6 +1632,7 @@ jQuery(function(){
 		qfObj.hasState = false;
 		qfObj.hasRecord = false;
 		qfObj.recMode = false;
+		qfObj.gameWinner = null;
 
 		qfObj.fState.whWalls = [];
 		qfObj.fState.wvWalls = [];
